@@ -20,7 +20,7 @@ import zipfile
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'your-secret-key-change-this'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///shop.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///shop.db?check_same_thread=False'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SQLALCHEMY_POOL_SIZE'] = 10
 app.config['SQLALCHEMY_POOL_RECYCLE'] = 3600
@@ -1096,7 +1096,9 @@ def update_last_active():
 # ==============================
 
 with app.app_context():
-    db.create_all()
+    if not os.path.exists(DATABASE_PATH):
+        db.create_all()
+
     
     # Создаем админа по умолчанию
     admin = User.query.filter_by(username='admin').first()
@@ -1114,4 +1116,4 @@ with app.app_context():
 # ==============================
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', debug=False, port=8080, threaded=True)
+    app.run(host='0.0.0.0', port=8080, debug=False, use_reloader=False)
