@@ -1,0 +1,183 @@
+<!-- templates/cart.html -->
+{% extends "base.html" %}
+
+{% block title %}Корзина{% endblock %}
+
+{% block content %}
+<style>
+/* Мобильная корзина */
+.cart-page-title {
+    text-align: center;
+    margin: 1.5rem 0;
+}
+
+.cart-page-title h1 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #1e293b;
+}
+
+.cart-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    background: white;
+    border-radius: 12px;
+    margin-bottom: 0.75rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.cart-item-img {
+    width: 70px;
+    height: 70px;
+    object-fit: cover;
+    border-radius: 10px;
+    flex-shrink: 0;
+}
+
+.cart-item-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.cart-item-name {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #1e293b;
+    margin-bottom: 0.25rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.cart-item-details {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.cart-item-qty {
+    background: #3b82f6;
+    color: white;
+    padding: 0.25rem 0.5rem;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.cart-item-price {
+    color: #94a3b8;
+    font-size: 0.85rem;
+}
+
+.cart-item-actions {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.5rem;
+}
+
+.cart-item-total {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #10b981;
+}
+
+.cart-summary {
+    position: sticky;
+    bottom: calc(5rem + env(safe-area-inset-bottom));
+    background: white;
+    padding: 1.25rem;
+    border-radius: 16px;
+    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.08);
+    margin-top: 1rem;
+}
+
+.cart-total-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.cart-total-label {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #1e293b;
+}
+
+.cart-total-price {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #10b981;
+}
+
+@media (min-width: 768px) {
+    .cart-summary {
+        bottom: 2rem;
+        position: relative;
+    }
+    
+    .cart-page-title h1 {
+        font-size: 2rem;
+    }
+}
+</style>
+
+<div class="cart-page-title fade-in">
+    <h1><i class="fas fa-shopping-cart"></i> Корзина</h1>
+</div>
+
+{% if products %}
+<div class="cart-items">
+    {% for item in products %}
+    <div class="cart-item fade-in" style="animation-delay: {{ loop.index0 * 0.05 }}s">
+        <div>
+            {% if item.product.image %}
+            <img src="/static/{{ item.product.image }}" class="cart-item-img" alt="{{ item.product.name }}">
+            {% else %}
+            <div class="cart-item-img d-flex align-items-center justify-content-center" style="background: #f8fafc;">
+                <i class="fas fa-image text-muted"></i>
+            </div>
+            {% endif %}
+        </div>
+        <div class="cart-item-info">
+            <div class="cart-item-name">{{ item.product.name }}</div>
+            <div class="cart-item-details">
+                <span class="cart-item-qty">×{{ item.quantity }}</span>
+                <span class="cart-item-price">{{ item.product.price }} UZS</span>
+            </div>
+        </div>
+        <div class="cart-item-actions">
+            <div class="cart-item-total">{{ item.product.price * item.quantity }} UZS</div>
+            <a href="{{ url_for('remove_from_cart', product_id=item.product.id) }}" class="btn btn-sm btn-danger">
+                <i class="fas fa-trash"></i>
+            </a>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<div class="cart-summary fade-in" style="animation-delay: 0.3s">
+    <div class="cart-total-row">
+        <span class="cart-total-label">Итого:</span>
+        <span class="cart-total-price">{{ total }} UZS</span>
+    </div>
+    <a href="{{ url_for('checkout') }}" class="btn btn-success w-100 py-3">
+        <i class="fas fa-check-circle"></i> Оформить заказ
+    </a>
+</div>
+{% else %}
+<div class="card text-center py-5 fade-in" style="margin-top: 2rem;">
+    <div class="card-body">
+        <i class="fas fa-shopping-cart fa-4x mb-3" style="color: #cbd5e1;"></i>
+        <h3>Корзина пуста</h3>
+        <p class="text-muted mb-4">Добавьте товары для оформления заказа</p>
+        <a href="{{ url_for('index') }}" class="btn btn-primary">
+            <i class="fas fa-shopping-bag"></i> К покупкам
+        </a>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

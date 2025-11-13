@@ -1,0 +1,250 @@
+{% extends "base.html" %}
+
+{% block title %}Профиль{% endblock %}
+
+{% block content %}
+<style>
+/* Профиль */
+.profile-page-title {
+    text-align: center;
+    margin: 1.5rem 0;
+}
+
+.profile-page-title h1 {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: #1e293b;
+}
+
+.profile-card {
+    background: white;
+    border-radius: 16px;
+    padding: 2rem;
+    text-align: center;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+    margin-bottom: 2rem;
+    position: relative;
+}
+
+.profile-icon {
+    font-size: 5rem;
+    color: #3b82f6;
+    margin-bottom: 1rem;
+}
+
+.profile-name {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin-bottom: 0.5rem;
+}
+
+.profile-role {
+    background: #3b82f6;
+    color: white;
+    padding: 0.4rem 1.2rem;
+    border-radius: 20px;
+    display: inline-block;
+    font-weight: 600;
+    font-size: 0.85rem;
+}
+
+.logout-btn {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: #ef4444;
+    color: white;
+    border: none;
+    padding: 0.4rem 0.8rem;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.logout-btn:hover {
+    background: #dc2626;
+}
+
+/* Заказы */
+.orders-header {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.order-card {
+    background: white;
+    border-radius: 16px;
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+    transition: transform 0.2s ease;
+}
+
+.order-card:hover {
+    transform: translateY(-2px);
+}
+
+.order-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.order-number {
+    font-weight: 700;
+    color: #1e293b;
+}
+
+.order-date {
+    font-size: 0.85rem;
+    color: #94a3b8;
+}
+
+.order-items {
+    margin-bottom: 1rem;
+}
+
+.order-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.order-item:last-child {
+    border-bottom: none;
+}
+
+.order-item-name {
+    font-size: 0.95rem;
+    color: #1e293b;
+}
+
+.order-item-qty {
+    background: #64748b;
+    color: white;
+    padding: 0.2rem 0.5rem;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    margin-left: 0.5rem;
+}
+
+.order-item-price {
+    font-weight: 700;
+    color: #10b981;
+}
+
+.order-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-top: 2px solid #f1f5f9;
+    padding-top: 0.75rem;
+}
+
+.order-total {
+    font-weight: 700;
+    color: #1e293b;
+}
+
+.order-total-price {
+    color: #10b981;
+    font-weight: 700;
+}
+
+@media (min-width: 768px) {
+    .profile-page-title h1 {
+        font-size: 2rem;
+    }
+
+    .profile-card {
+        padding: 2.5rem;
+    }
+
+    .order-card {
+        padding: 2rem;
+    }
+}
+</style>
+
+<div class="profile-page-title fade-in">
+    <h1><i class="fas fa-user-circle"></i> Профиль</h1>
+</div>
+
+<div class="profile-card fade-in">
+    <i class="fas fa-user-circle profile-icon"></i>
+    <div class="profile-name">{{ user.username }}</div>
+    <span class="profile-role">{{ user.role }}</span>
+    <a href="{{ url_for('logout') }}" class="logout-btn">
+    <i class="fas fa-sign-out-alt"></i> Выйти
+</a>
+
+
+</div>
+
+<div class="orders-header">
+    <i class="fas fa-history"></i> История заказов
+</div>
+
+{% if orders %}
+    {% for order in orders %}
+    <div class="order-card fade-in" style="animation-delay: {{ loop.index0 * 0.05 }}s">
+        <div class="order-header">
+            <div>
+                <div class="order-number">Заказ #{{ order.id }}</div>
+                <div class="order-date">{{ order.created_at.strftime('%d.%m.%Y %H:%M') }}</div>
+            </div>
+            {% if order.status == 'pending' %}
+                <span class="badge bg-warning">Ожидает</span>
+            {% elif order.status == 'confirmed' %}
+                <span class="badge bg-success">Подтверждён</span>
+            {% elif order.status == 'cancelled' %}
+                <span class="badge bg-danger">Отменён</span>
+            {% endif %}
+        </div>
+
+        <div class="order-items">
+            {% for item in order.items %}
+            <div class="order-item">
+                <div>
+                    <span class="order-item-name">{{ item.product.name }}</span>
+                    <span class="order-item-qty">×{{ item.quantity }}</span>
+                </div>
+                <span class="order-item-price">{{ item.product.price * item.quantity }} UZS</span>
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="order-footer">
+            <span class="order-total">Итого:</span>
+            <span class="order-total-price">
+                {% set total = namespace(value=0) %}
+                {% for item in order.items %}
+                    {% set total.value = total.value + (item.product.price * item.quantity) %}
+                {% endfor %}
+                {{ total.value }} UZS
+            </span>
+        </div>
+    </div>
+    {% endfor %}
+{% else %}
+<div class="card text-center py-5 fade-in">
+    <div class="card-body">
+        <i class="fas fa-inbox fa-4x mb-3" style="color: #cbd5e1;"></i>
+        <h4>У вас пока нет заказов</h4>
+        <p class="text-muted mb-4">Начните делать покупки</p>
+        <a href="{{ url_for('index') }}" class="btn btn-primary">
+            <i class="fas fa-shopping-bag"></i> К покупкам
+        </a>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

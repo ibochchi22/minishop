@@ -1,0 +1,276 @@
+{% extends "base.html" %}
+{% block title %}Админ-панель{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+.dashboard-wrap { padding: 1rem; padding-bottom: 6rem; }
+.header { display:flex; justify-content:space-between; align-items:center; gap:12px; margin-bottom:18px; }
+.header-left h2 { margin:0; font-weight:800; color: #111827; }
+.header-left p { margin:0; color:#64748b; }
+.header-right { display:flex; gap:8px; align-items:center; }
+
+.metrics { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:12px; margin-bottom:18px; }
+.metric { background:#fff; padding:14px; border-radius:12px; box-shadow:0 4px 18px rgba(2,6,23,0.06); display:flex; align-items:center; gap:12px; }
+.metric .icon { width:44px; height:44px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:18px; color:#fff; }
+.icon.users { background: linear-gradient(135deg,#4f46e5,#6366f1); }
+.icon.products { background: linear-gradient(135deg,#06b6d4,#0891b2); }
+.icon.orders { background: linear-gradient(135deg,#10b981,#059669); }
+.icon.online { background: linear-gradient(135deg,#f59e0b,#f97316); }
+
+.metric .meta { font-weight:700; font-size:1.1rem; color:#0f172a; }
+.metric .label { font-size:0.85rem; color:#64748b; }
+
+.grid { display:grid; grid-template-columns:1fr 360px; gap:14px; align-items:start; }
+
+.card { background:#fff; border-radius:12px; padding:12px; box-shadow:0 6px 20px rgba(2,6,23,0.04); }
+
+.quick-links { display:flex; gap:8px; flex-wrap:wrap; margin-top:8px; }
+.quick-links a { text-decoration:none; background:#f8fafc; color:#0f172a; padding:8px 12px; border-radius:10px; font-weight:600; font-size:0.9rem; border:1px solid #eef2ff; display:inline-flex; gap:8px; align-items:center; }
+
+.user-list { list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:8px; }
+.user-item { display:flex; justify-content:space-between; align-items:center; gap:8px; padding:8px; border-radius:8px; background:#f8fafc; }
+
+.logout-btn { display:inline-flex; align-items:center; gap:8px; padding:10px 14px; background:#ef4444; color:white; border-radius:10px; text-decoration:none; font-weight:700; }
+@media (max-width:900px) {
+  .grid { grid-template-columns: 1fr; }
+  .header { flex-direction:column; align-items:flex-start; gap:8px; }
+}
+
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #f9fafb;
+  padding: 1rem 1.2rem;
+  border-radius: 14px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+/* Левая часть */
+.title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+}
+
+.icon-circle {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #4f46e5, #6366f1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 1.4rem;
+}
+
+.header-left h2 {
+  font-weight: 800;
+  color: #111827;
+  margin: 0;
+}
+
+.header-left p {
+  color: #6b7280;
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+/* Правая часть с кнопками */
+.header-actions {
+  display: flex;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.action-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.5rem 0.9rem;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  color: #374151;
+  font-weight: 600;
+  font-size: 0.9rem;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.03);
+}
+
+.action-btn i {
+  font-size: 1rem;
+}
+
+.action-btn:hover {
+  background: #eef2ff;
+  border-color: #c7d2fe;
+  color: #1e40af;
+  transform: translateY(-2px);
+}
+
+/* Кнопка выхода */
+.action-btn.logout {
+  background: #ef4444;
+  border: none;
+  color: white;
+}
+
+.action-btn.logout:hover {
+  background: #dc2626;
+  transform: translateY(-2px);
+}
+
+/* Адаптив */
+@media (max-width: 700px) {
+  .header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .header-actions {
+    justify-content: space-between;
+  }
+
+  .action-btn {
+    flex: 1;
+    justify-content: center;
+  }
+}
+
+</style>
+
+<div class="header">
+  <div class="header-left">
+    <div class="title-wrap">
+      <div class="icon-circle">
+        <i class="fas fa-cog"></i>
+      </div>
+      <div>
+        <h2>Админ-панель</h2>
+        <p>Обзор управления магазином</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="header-actions">
+    <a href="{{ url_for('admin_orders') }}" class="action-btn" title="Заказы">
+      <i class="fas fa-list"></i>
+      <span>Заказы</span>
+    </a>
+    <a href="{{ url_for('admin_products') }}" class="action-btn" title="Товары">
+      <i class="fas fa-boxes"></i>
+      <span>Товары</span>
+    </a>
+    <a href="{{ url_for('admin_settings') }}" class="action-btn" title="Настройки">
+      <i class="fas fa-sliders-h"></i>
+      <span>Настройки</span>
+    </a>
+    <a href="{{ url_for('logout') }}" class="action-btn logout" title="Выйти">
+      <i class="fas fa-sign-out-alt"></i>
+      <span>Выйти</span>
+    </a>
+  </div>
+</div>
+
+
+  <div class="metrics">
+    <div class="metric">
+      <div class="icon users"><i class="fas fa-users"></i></div>
+      <div>
+        <div class="meta">{{ total_users or 0 }}</div>
+        <div class="label">Всего пользователей</div>
+      </div>
+    </div>
+
+    <div class="metric">
+      <div class="icon products"><i class="fas fa-boxes"></i></div>
+      <div>
+        <div class="meta">{{ total_products or 0 }}</div>
+        <div class="label">Всего товаров</div>
+      </div>
+    </div>
+
+    <div class="metric">
+      <div class="icon orders"><i class="fas fa-receipt"></i></div>
+      <div>
+        <div class="meta">{{ total_orders or 0 }}</div>
+        <div class="label">Всего заказов</div>
+      </div>
+    </div>
+
+    <div class="metric">
+      <div class="icon online"><i class="fas fa-user-clock"></i></div>
+      <div>
+        <div class="meta">{{ online_users or 0 }}</div>
+        <div class="label">Онлайн сейчас (5 мин)</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid">
+    <div>
+      <div class="card">
+        <h4 style="margin:0 0 8px 0">Последние заказы</h4>
+        {% if recent_orders %}
+          <ul style="list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:8px">
+            {% for o in recent_orders %}
+            <li style="display:flex;justify-content:space-between;align-items:center;padding:8px;border-radius:8px;background:#fbfbff">
+              <div>
+                <strong>#{{ o.id }}</strong> — {{ o.user.username }} 
+                <div style="font-size:0.85rem;color:#6b7280">{{ o.created_at.strftime('%d.%m.%Y %H:%M') }}</div>
+              </div>
+              <div style="display:flex;gap:8px">
+                <a href="{{ url_for('print_order', order_id=o.id) }}" target="_blank" class="quick-links a" style="padding:6px 8px"><i class="fas fa-print"></i> Печать</a>
+                <a href="{{ url_for('admin_orders') }}" class="quick-links a" style="padding:6px 8px">Открыть</a>
+              </div>
+            </li>
+            {% endfor %}
+          </ul>
+        {% else %}
+          <p class="text-muted">Заказов пока нет</p>
+        {% endif %}
+      </div>
+
+      <div class="card" style="margin-top:12px">
+        <h4 style="margin:0 0 8px 0">Быстрые ссылки</h4>
+        <div class="quick-links">
+          <a href="{{ url_for('admin_users') }}"><i class="fas fa-user"></i> Пользователи</a>
+          <a href="{{ url_for('admin_products') }}"><i class="fas fa-box-open"></i> Товары</a>
+          <a href="{{ url_for('admin_banners') }}"><i class="fas fa-image"></i> Баннеры</a>
+          <a href="{{ url_for('admin_settings') }}"><i class="fas fa-sliders-h"></i> Настройки</a>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="card">
+        <h4 style="margin:0 0 8px 0">Онлайн пользователи</h4>
+        {% if recent_online %}
+        <ul class="user-list">
+          {% for u in recent_online %}
+          <li class="user-item">
+            <div>
+              <strong>{{ u.username }}</strong><br>
+              <small style="color:#6b7280">{{ u.last_active.strftime('%H:%M:%S %d.%m.%Y') }}</small>
+            </div>
+            <div style="font-size:0.85rem;color:#16a34a">online</div>
+          </li>
+          {% endfor %}
+        </ul>
+        {% else %}
+          <p class="text-muted">Никого нет онлайн</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

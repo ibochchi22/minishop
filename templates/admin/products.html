@@ -1,0 +1,191 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="container mt-4">
+  <h3 class="mb-4 text-center"><i class="fas fa-box"></i> Управление товарами</h3>
+
+  <!-- ✅ Форма добавления -->
+  <form action="{{ url_for('add_product') }}" method="POST" enctype="multipart/form-data" class="row g-3 mb-4">
+    <div class="col-md-4">
+      <input type="text" name="name" class="form-control" placeholder="Название товара" required>
+    </div>
+    <div class="col-md-2">
+      <input type="number" name="price" class="form-control" placeholder="Цена" step="0.01" min="0" required>
+
+    </div>
+    <div class="col-md-3">
+      <input type="file" name="image" class="form-control" accept="image/*">
+    </div>
+    <div class="col-md-3">
+      <button type="submit" class="btn btn-success w-100">Добавить</button>
+    </div>
+  </form>
+
+  <!-- 🔍 Поиск -->
+  <div class="mb-4 text-center">
+    <input type="text" id="searchInput" class="form-control w-75 mx-auto shadow-sm" placeholder="🔍 Поиск по товарам...">
+  </div>
+
+  <!-- 🔹 Вкладки -->
+  <ul class="nav nav-tabs mb-3" id="productTabs">
+    <li class="nav-item">
+      <a class="nav-link active" data-bs-toggle="tab" href="#active-products">Активные</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" data-bs-toggle="tab" href="#archived-products">Архив</a>
+    </li>
+  </ul>
+
+  <div class="tab-content">
+    <!-- 📦 Активные товары -->
+    <div class="tab-pane fade show active" id="active-products">
+      <div class="product-grid">
+        {% for product in products if not product.is_archived %}
+        <div class="product-card" data-name="{{ product.name|lower }}">
+          <img 
+            src="{{ url_for('static', filename=product.image.replace('\\', '/')) }}" 
+            alt="{{ product.name }}" 
+            class="product-img" 
+            loading="lazy"
+            onerror="this.onerror=null; this.src='https://via.placeholder.com/400x220/f1f5f9/94a3b8?text=Фото';">
+          
+          <div class="card-body text-center">
+            <h6 class="product-name">{{ product.name }}</h6>
+            <p class="product-price">{{ product.price }} $</p>
+            
+            <form action="{{ url_for('edit_product', product_id=product.id) }}" method="POST" enctype="multipart/form-data" class="mb-2">
+              <input type="text" name="name" class="form-control mb-1" placeholder="Новое название">
+              <input type="number" name="price" class="form-control mb-1" placeholder="Новая цена" step="0.01" min="0">
+              <input type="file" name="image" class="form-control mb-2" accept="image/*">
+              <button class="btn btn-sm btn-outline-primary w-100">Изменить</button>
+            </form>
+
+            <a href="{{ url_for('archive_product', product_id=product.id) }}" class="btn btn-sm btn-outline-warning w-100 mb-1">Архивировать</a>
+            <a href="{{ url_for('delete_product', product_id=product.id) }}" class="btn btn-sm btn-outline-danger w-100">Удалить</a>
+          </div>
+        </div>
+        {% else %}
+          <p class="text-muted text-center">Активных товаров нет</p>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- 📦 Архив -->
+    <div class="tab-pane fade" id="archived-products">
+      <div class="product-grid">
+        {% for product in products if product.is_archived %}
+        <div class="product-card archived" data-name="{{ product.name|lower }}">
+          <img 
+            src="{{ url_for('static', filename=product.image.replace('\\', '/')) }}" 
+            alt="{{ product.name }}" 
+            class="product-img grayscale">
+          <div class="card-body text-center">
+            <h6 class="product-name text-muted">{{ product.name }}</h6>
+            <p class="product-price text-muted">{{ product.price }} UZS</p>
+            <a href="{{ url_for('unarchive_product', product_id=product.id) }}" class="btn btn-sm btn-outline-success w-100">Восстановить</a>
+          </div>
+        </div>
+        {% else %}
+          <p class="text-muted text-center">Архив пуст</p>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 🎨 Стили -->
+<style>
+.product-grid {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+}
+
+.product-card {
+  flex: 0 0 calc(50% - 10px);
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  overflow: hidden;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  display: flex;
+  flex-direction: column;
+}
+
+.product-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+}
+
+.product-img {
+  width: 100%;
+  height: 160px;
+  object-fit: cover;
+}
+
+.card-body {
+  padding: 10px;
+}
+
+.product-name {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.product-price {
+  font-size: 13px;
+  color: #555;
+  margin-bottom: 8px;
+}
+
+.grayscale {
+  filter: grayscale(100%);
+}
+
+/* 📱 Мобильный адаптив */
+@media (max-width: 600px) {
+  .product-card {
+    flex: 0 0 calc(50% - 8px);
+    border-radius: 10px;
+  }
+
+  .product-img {
+    height: 120px;
+  }
+
+  .card-body {
+    padding: 6px;
+  }
+
+  .product-name {
+    font-size: 13px;
+  }
+
+  .product-price {
+    font-size: 12px;
+  }
+
+  .btn-sm {
+    font-size: 11px;
+    padding: 4px;
+  }
+}
+</style>
+
+<!-- 🔍 JS-поиск -->
+<script>
+document.getElementById('searchInput').addEventListener('input', function () {
+  const search = this.value.trim().toLowerCase();
+  const activeTab = document.querySelector('.tab-pane.active');
+  const cards = activeTab.querySelectorAll('.product-card');
+
+  cards.forEach(card => {
+    const name = card.dataset.name;
+    card.style.display = name.includes(search) ? 'flex' : 'none';
+  });
+});
+</script>
+
+{% endblock %}

@@ -1,0 +1,560 @@
+{% extends "base.html" %}
+
+{% block title %}Главная - Shop{% endblock %}
+
+{% block content %}
+<style>
+/* Поиск */
+.search-container {
+    padding: 1rem 0 0.5rem;
+}
+
+.search-box {
+    position: relative;
+    width: 100%;
+}
+
+.search-input {
+    width: 100%;
+    padding: 0.75rem 3rem 0.75rem 1rem;
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    font-size: 0.95rem;
+    transition: all 0.2s ease;
+}
+
+.search-input:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.search-icon {
+    position: absolute;
+    right: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #94a3b8;
+    pointer-events: none;
+}
+
+/* Слайдер баннеров */
+.banner-slider {
+    margin: 1rem 0;
+    border-radius: 16px;
+    overflow: hidden;
+    position: relative;
+}
+
+.banner-slide {
+    display: none;
+    animation: fadeIn 0.5s ease;
+}
+
+.banner-slide.active {
+    display: block;
+}
+
+.banner-slide img {
+    width: 100%;
+    height: 180px;
+    object-fit: cover;
+    border-radius: 16px;
+}
+
+.slider-dots {
+    position: absolute;
+    bottom: 1rem;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 0.5rem;
+    z-index: 10;
+}
+
+.slider-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.5);
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.slider-dot.active {
+    width: 24px;
+    border-radius: 4px;
+    background: white;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+/* Остальные стили */
+.page-title {
+    text-align: center;
+    margin: 1rem 0 0.5rem;
+}
+
+.page-title h1 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin-bottom: 0.25rem;
+}
+
+.page-title p {
+    color: #94a3b8;
+    font-size: 0.85rem;
+}
+
+.products-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+    margin-bottom: 5rem;
+}
+
+.mobile-product-card {
+    background: white;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.mobile-product-card:active {
+    transform: scale(0.97);
+}
+
+.mobile-product-img {
+    width: 100%;
+    height: 160px;
+    object-fit: cover;
+    background: #f8fafc;
+}
+
+.mobile-card-body {
+    padding: 0.875rem;
+}
+
+.mobile-card-title {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #1e293b;
+    margin-bottom: 0.5rem;
+    line-height: 1.3;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.mobile-price {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #10b981;
+    margin-bottom: 0.75rem;
+}
+
+.mobile-add-btn {
+    width: 100%;
+    padding: 0.65rem;
+    border-radius: 10px;
+    border: none;
+    background: #3b82f6;
+    color: white;
+    font-weight: 600;
+    font-size: 0.85rem;
+    transition: all 0.2s ease;
+}
+
+.mobile-add-btn:active {
+    transform: scale(0.95);
+}
+
+.mobile-add-btn.adding {
+    background: #10b981 !important;
+    pointer-events: none;
+}
+
+.qty-controls {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.qty-btn {
+    width: 32px;
+    height: 32px;
+    border: none;
+    border-radius: 8px;
+    background: #e2e8f0;
+    font-weight: 700;
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.qty-btn:active {
+    transform: scale(0.9);
+    background: #cbd5e1;
+}
+
+.qty-input {
+    width: 40px;
+    text-align: center;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    height: 32px;
+    font-weight: 600;
+}
+
+#fly-img {
+    display: none;
+    position: fixed;
+    z-index: 9999;
+    pointer-events: none;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(15px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.fade-in {
+    animation: fadeInUp 0.4s ease forwards;
+    opacity: 0;
+}
+
+@keyframes checkSpin {
+    0% { transform: rotate(0deg) scale(1); }
+    50% { transform: rotate(180deg) scale(1.2); }
+    100% { transform: rotate(360deg) scale(1); }
+}
+
+.mobile-add-btn.adding i {
+    animation: checkSpin 0.5s ease;
+}
+
+@keyframes cartBounce {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.2); }
+}
+
+.cart-bounce {
+    animation: cartBounce 0.4s ease;
+}
+
+.ripple {
+    position: absolute;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.6);
+    transform: scale(0);
+    animation: rippleEffect 0.6s ease-out;
+    pointer-events: none;
+}
+
+@keyframes rippleEffect {
+    to {
+        transform: scale(4);
+        opacity: 0;
+    }
+}
+
+@media (min-width: 768px) {
+    .products-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+    
+    .mobile-product-img {
+        height: 200px;
+    }
+
+    .banner-slide img {
+        height: 250px;
+    }
+}
+</style>
+
+<!-- Поиск -->
+<div class="search-container">
+    <div class="search-box">
+        <input type="text" id="searchInput" class="search-input" placeholder="Поиск товаров...">
+        <i class="fas fa-search search-icon"></i>
+    </div>
+</div>
+
+<!-- Слайдер баннеров -->
+<div class="banner-slider">
+  {% for banner in banners %}
+    <div class="banner-slide {% if loop.first %}active{% endif %}">
+      <img src="{{ url_for('static', filename='banners/' ~ banner.filename) }}" alt="Баннер {{ loop.index }}">
+    </div>
+  {% endfor %}
+
+  <div class="slider-dots">
+    {% for banner in banners %}
+      <span class="slider-dot {% if loop.first %}active{% endif %}" data-slide="{{ loop.index0 }}"></span>
+    {% endfor %}
+  </div>
+</div>
+
+<div class="page-title fade-in">
+    <h1><i class="fas fa-store"></i> Каталог товаров</h1>
+    <p>Выберите товары для покупки</p>
+</div>
+
+{% if products %}
+<div class="products-grid" id="productsGrid">
+    {% for product in products %}
+    <div class="mobile-product-card fade-in product-item" data-name="{{ product.name|lower }}" style="animation-delay: {{ loop.index0 * 0.05 }}s">
+        {% if product.image %}
+        <img src="/static/{{ product.image }}" class="mobile-product-img" alt="{{ product.name }}" loading="lazy"
+            onerror="this.onerror=null; this.src='https://via.placeholder.com/400x220/f1f5f9/94a3b8?text=Фото';">
+        {% else %}
+        <div class="mobile-product-img d-flex align-items-center justify-content-center">
+            <i class="fas fa-image fa-3x" style="color: #cbd5e1;"></i>
+        </div>
+        {% endif %}
+
+        <div class="mobile-card-body">
+            <h6 class="mobile-card-title">{{ product.name }}</h6>
+            <div class="mobile-price">{{ product.price }} UZS</div>
+
+            {% if session.user_id %}
+            <div class="qty-controls">
+                <button class="qty-btn minus">−</button>
+                <input type="number" class="qty-input" value="1" min="1" max="99">
+                <button class="qty-btn plus">+</button>
+            </div>
+
+            <button class="mobile-add-btn"
+                data-product-id="{{ product.id }}"
+                data-url="{{ url_for('add_to_cart', product_id=product.id) }}">
+                <i class="fas fa-cart-plus"></i> В корзину
+            </button>
+            {% else %}
+            <a href="{{ url_for('login') }}" class="mobile-add-btn d-block text-center text-white text-decoration-none"
+                style="background: #64748b;">
+                <i class="fas fa-lock"></i> Войти
+            </a>
+            {% endif %}
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="card text-center py-5 fade-in">
+    <div class="card-body">
+        <i class="fas fa-box-open fa-4x mb-3" style="color: #cbd5e1;"></i>
+        <h3>Товары пока не добавлены</h3>
+        <p class="text-muted">Скоро здесь появятся новые товары!</p>
+    </div>
+</div>
+{% endif %}
+
+<img id="fly-img" src="" alt="">
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Слайдер баннеров
+    let currentSlide = 0;
+    const slides = document.querySelectorAll('.banner-slide');
+    const dots = document.querySelectorAll('.slider-dot');
+    
+    function showSlide(index) {
+        slides.forEach(slide => slide.classList.remove('active'));
+        dots.forEach(dot => dot.classList.remove('active'));
+        
+        slides[index].classList.add('active');
+        dots[index].classList.add('active');
+    }
+    
+    function nextSlide() {
+        currentSlide = (currentSlide + 1) % slides.length;
+        showSlide(currentSlide);
+    }
+    
+    // Автопрокрутка каждые 3 секунды
+    setInterval(nextSlide, 3000);
+    
+    // Клик по точкам
+    dots.forEach(dot => {
+        dot.addEventListener('click', function() {
+            currentSlide = parseInt(this.dataset.slide);
+            showSlide(currentSlide);
+        });
+    });
+
+    // Поиск товаров
+    const searchInput = document.getElementById('searchInput');
+    const productItems = document.querySelectorAll('.product-item');
+    
+    searchInput.addEventListener('input', function() {
+        const searchTerm = this.value.toLowerCase().trim();
+        
+        productItems.forEach(item => {
+            const productName = item.dataset.name;
+            if (productName.includes(searchTerm)) {
+                item.style.display = 'block';
+            } else {
+                item.style.display = 'none';
+            }
+        });
+    });
+
+    const flyImg = document.getElementById('fly-img');
+    const cartIconTabbar = document.querySelector('.mobile-tabbar .fa-shopping-cart');
+    const cartIconHeader = document.querySelector('.header-cart-mobile .fa-shopping-cart');
+    const cartIcon = cartIconTabbar || cartIconHeader;
+
+    // Кнопки количества
+    document.querySelectorAll('.mobile-card-body').forEach(body => {
+        const minus = body.querySelector('.qty-btn.minus');
+        const plus = body.querySelector('.qty-btn.plus');
+        const input = body.querySelector('.qty-input');
+
+        if (minus && plus && input) {
+            minus.addEventListener('click', () => {
+                let val = parseInt(input.value) || 1;
+                if (val > 1) input.value = val - 1;
+            });
+
+            plus.addEventListener('click', () => {
+                let val = parseInt(input.value) || 1;
+                if (val < 99) input.value = val + 1;
+            });
+        }
+    });
+
+    // Добавление в корзину
+    document.querySelectorAll('.mobile-add-btn').forEach(button => {
+        button.addEventListener('click', function(e) {
+            if (!this.classList.contains('adding')) {
+                createRipple(e, this);
+            }
+        });
+
+        button.addEventListener('click', async function(e) {
+            e.preventDefault();
+            
+            if (this.classList.contains('adding')) return;
+            
+            const url = this.dataset.url;
+            const card = this.closest('.mobile-product-card');
+            const productImg = card.querySelector('.mobile-product-img');
+            const qtyInput = card.querySelector('.qty-input');
+            const quantity = parseInt(qtyInput.value) || 1;
+            
+            const originalHTML = this.innerHTML;
+            this.innerHTML = `<i class="fas fa-check"></i> Добавлено (${quantity})`;
+            this.classList.add('adding');
+            this.disabled = true;
+            
+            if (productImg && cartIcon && productImg.tagName === 'IMG' && !productImg.src.includes('placeholder')) {
+                animateFlyToCart(productImg, cartIcon);
+            }
+            
+            try {
+                const response = await fetch(`${url}?quantity=${quantity}`);
+                if (response.ok) {
+                    updateCartCount(quantity);
+                    if (navigator.vibrate) {
+                        navigator.vibrate(50);
+                    }
+                }
+            } catch (error) {
+                console.error('Ошибка:', error);
+            }
+            
+            setTimeout(() => {
+                this.innerHTML = originalHTML;
+                this.classList.remove('adding');
+                this.disabled = false;
+                qtyInput.value = 1;
+            }, 1200);
+        });
+    });
+    
+    function createRipple(event, button) {
+        const ripple = document.createElement('span');
+        const rect = button.getBoundingClientRect();
+        const size = Math.max(rect.width, rect.height);
+        const x = event.clientX - rect.left - size / 2;
+        const y = event.clientY - rect.top - size / 2;
+        
+        ripple.style.width = ripple.style.height = size + 'px';
+        ripple.style.left = x + 'px';
+        ripple.style.top = y + 'px';
+        ripple.classList.add('ripple');
+        
+        button.style.position = 'relative';
+        button.style.overflow = 'hidden';
+        button.appendChild(ripple);
+        
+        setTimeout(() => ripple.remove(), 600);
+    }
+    
+    function animateFlyToCart(imgElement, targetIcon) {
+        const imgRect = imgElement.getBoundingClientRect();
+        const targetRect = targetIcon.getBoundingClientRect();
+        
+        flyImg.src = imgElement.src;
+        flyImg.style.display = 'block';
+        flyImg.style.left = imgRect.left + 'px';
+        flyImg.style.top = imgRect.top + 'px';
+        flyImg.style.width = imgRect.width + 'px';
+        flyImg.style.height = imgRect.height + 'px';
+        flyImg.style.opacity = '1';
+        flyImg.style.transition = 'none';
+        
+        requestAnimationFrame(() => {
+            const finalLeft = targetRect.left + (targetRect.width / 2) - 20;
+            const finalTop = targetRect.top + (targetRect.height / 2) - 20;
+            
+            flyImg.style.transition = 'all 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+            flyImg.style.left = finalLeft + 'px';
+            flyImg.style.top = finalTop + 'px';
+            flyImg.style.width = '40px';
+            flyImg.style.height = '40px';
+            flyImg.style.opacity = '0';
+        });
+        
+        const cartParent = targetIcon.closest('.tabbar-item') || targetIcon.parentElement;
+        if (cartParent) {
+            cartParent.classList.add('cart-bounce');
+            setTimeout(() => cartParent.classList.remove('cart-bounce'), 400);
+        }
+        
+        setTimeout(() => {
+            flyImg.style.display = 'none';
+        }, 750);
+    }
+    
+    function updateCartCount(addedQty = 1) {
+        const badges = document.querySelectorAll('.tabbar-badge, .cart-count');
+        badges.forEach(badge => {
+            const count = parseInt(badge.textContent) || 0;
+            badge.textContent = count + addedQty;
+            badge.style.display = 'flex';
+            badge.style.animation = 'cartBounce 0.5s ease';
+        });
+    }
+});
+</script>
+
+{% endblock %}

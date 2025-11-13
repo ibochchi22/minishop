@@ -1,0 +1,429 @@
+{% extends "base.html" %}
+
+{% block title %}Настройки{% endblock %}
+
+{% block content %}
+<style>
+    .settings-container {
+        max-width: 1000px;
+        margin: 0 auto;
+        padding: 15px;
+    }
+    
+    .settings-card {
+        background: #ffffff;
+        border-radius: 16px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.07);
+        margin-bottom: 20px;
+        overflow: hidden;
+        border: 1px solid #e5e7eb;
+    }
+    
+    .settings-card-header {
+        padding: 20px;
+        font-weight: 600;
+        font-size: 1.1rem;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        border-bottom: 2px solid #f3f4f6;
+    }
+    
+    .settings-card-body {
+        padding: 20px;
+    }
+    
+    .header-primary { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
+    .header-success { background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); color: white; }
+    .header-info { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); color: white; }
+    
+    .form-control {
+        border-radius: 10px;
+        border: 2px solid #e5e7eb;
+        padding: 12px 15px;
+        font-size: 0.95rem;
+        transition: all 0.3s;
+    }
+    
+    .form-control:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+    
+    .btn-custom {
+        border-radius: 10px;
+        padding: 12px 24px;
+        font-weight: 600;
+        border: none;
+        transition: all 0.3s;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        width: 100%;
+    }
+    
+    .btn-primary-custom {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+    }
+    
+    .btn-primary-custom:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+    }
+    
+    .btn-success-custom {
+        background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+        color: white;
+    }
+    
+    .btn-success-custom:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 20px rgba(17, 153, 142, 0.3);
+    }
+    
+    .btn-warning-custom {
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        color: white;
+    }
+    
+    .btn-warning-custom:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 20px rgba(245, 87, 108, 0.3);
+    }
+    
+    .btn-secondary-custom {
+        background: #6b7280;
+        color: white;
+    }
+    
+    .btn-secondary-custom:hover {
+        background: #4b5563;
+        transform: translateY(-2px);
+    }
+    
+    .backup-section {
+        display: grid;
+        gap: 20px;
+    }
+    
+    .backup-box {
+        background: #f9fafb;
+        border-radius: 12px;
+        padding: 20px;
+        border: 2px dashed #d1d5db;
+    }
+    
+    .backup-box h6 {
+        color: #1f2937;
+        font-weight: 600;
+        margin-bottom: 8px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    
+    .backup-box p {
+        color: #6b7280;
+        font-size: 0.9rem;
+        margin-bottom: 15px;
+    }
+    
+    .alert-custom {
+        border-radius: 12px;
+        border: none;
+        padding: 15px 20px;
+        background: #fef3c7;
+        color: #92400e;
+        display: flex;
+        align-items: start;
+        gap: 12px;
+        margin-top: 20px;
+    }
+    
+    .alert-custom i {
+        font-size: 1.3rem;
+        margin-top: 2px;
+    }
+    
+    .info-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0 8px;
+    }
+    
+    .info-table td {
+        padding: 12px 15px;
+        background: #f9fafb;
+        border: none;
+    }
+    
+    .info-table td:first-child {
+        border-radius: 10px 0 0 10px;
+        color: #6b7280;
+        font-weight: 500;
+        width: 40%;
+    }
+    
+    .info-table td:last-child {
+        border-radius: 0 10px 10px 0;
+        color: #1f2937;
+        font-weight: 600;
+    }
+    
+    /* Стили для загрузки файла */
+    .file-upload-wrapper {
+        position: relative;
+        margin-bottom: 15px;
+    }
+    
+    .file-upload-input {
+        width: 100%;
+        padding: 12px 15px;
+        border: 2px dashed #d1d5db;
+        border-radius: 10px;
+        background: #f9fafb;
+        cursor: pointer;
+        transition: all 0.3s;
+        font-size: 0.9rem;
+        color: #6b7280;
+    }
+    
+    .file-upload-input:hover {
+        border-color: #f5576c;
+        background: #fef2f2;
+    }
+    
+    .file-upload-input:focus {
+        outline: none;
+        border-color: #f5576c;
+        box-shadow: 0 0 0 3px rgba(245, 87, 108, 0.1);
+    }
+    
+    /* Стили для кастомной загрузки файла */
+    .custom-file-upload {
+        display: block;
+        padding: 15px;
+        border: 2px dashed #d1d5db;
+        border-radius: 10px;
+        background: #f9fafb;
+        cursor: pointer;
+        transition: all 0.3s;
+        text-align: center;
+        margin-bottom: 15px;
+    }
+    
+    .custom-file-upload:hover {
+        border-color: #f5576c;
+        background: #fef2f2;
+    }
+    
+    .custom-file-upload i {
+        font-size: 2rem;
+        color: #f5576c;
+        margin-bottom: 8px;
+        display: block;
+    }
+    
+    .custom-file-upload .file-text {
+        color: #6b7280;
+        font-size: 0.9rem;
+    }
+    
+    .custom-file-upload .file-name {
+        color: #1f2937;
+        font-weight: 600;
+        margin-top: 5px;
+        font-size: 0.85rem;
+    }
+    
+    .hidden-file-input {
+        display: none;
+    }
+    
+    @media (max-width: 768px) {
+        .settings-container {
+            padding: 10px;
+        }
+        
+        .settings-card-header {
+            padding: 15px;
+            font-size: 1rem;
+        }
+        
+        .settings-card-body {
+            padding: 15px;
+        }
+        
+        .btn-custom {
+            width: 100%;
+            justify-content: center;
+            margin-bottom: 10px;
+        }
+        
+        .backup-section {
+            grid-template-columns: 1fr;
+        }
+        
+        .info-table td:first-child {
+            width: 45%;
+            font-size: 0.85rem;
+        }
+        
+        .info-table td:last-child {
+            font-size: 0.9rem;
+        }
+    }
+    
+    @media (min-width: 769px) {
+        .backup-section {
+            grid-template-columns: 1fr 1fr;
+        }
+    }
+</style>
+
+<div class="settings-container">
+    <h2 style="margin-bottom: 25px; color: #1f2937; font-weight: 700;">
+        <i class="fas fa-cog"></i> Настройки системы
+    </h2>
+    
+    <!-- Общие настройки -->
+    <div class="settings-card">
+        <div class="settings-card-header header-primary">
+            <i class="fas fa-sliders-h"></i>
+            <span>Общие настройки</span>
+        </div>
+        <div class="settings-card-body">
+            <form method="POST" action="{{ url_for('admin_settings') }}">
+                <div class="mb-4">
+                    <label for="kurs" class="form-label" style="font-weight: 600; color: #374151;">
+                        <i class="fas fa-dollar-sign text-success"></i> Курс доллара (UZS)
+                    </label>
+                    <input type="number" step="0.01" class="form-control" id="kurs" 
+                           name="kurs" value="{{ kurs }}" required placeholder="12200">
+                    <small class="text-muted" style="display: block; margin-top: 5px;">
+                        💡 Цены в долларах будут умножаться на этот курс
+                    </small>
+                </div>
+                
+                <div class="mb-4">
+                    <label for="izoh" class="form-label" style="font-weight: 600; color: #374151;">
+                        <i class="fas fa-comment-dots text-primary"></i> Изох (примечание в чеке)
+                    </label>
+                    <textarea class="form-control" id="izoh" name="izoh" rows="3" 
+                              required placeholder="Введите текст примечания...">{{ izoh }}</textarea>
+                    <small class="text-muted" style="display: block; margin-top: 5px;">
+                        📝 Это сообщение будет отображаться в чеках заказов
+                    </small>
+                </div>
+                
+                <button type="submit" class="btn-custom btn-primary-custom">
+                    <i class="fas fa-save"></i> Сохранить настройки
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Резервное копирование -->
+    <div class="settings-card">
+        <div class="settings-card-header header-success">
+            <i class="fas fa-shield-alt"></i>
+            <span>Резервное копирование</span>
+        </div>
+        <div class="settings-card-body">
+            <div class="backup-section">
+                <div class="backup-box">
+                    <h6><i class="fas fa-cloud-download-alt text-success"></i> Скачать бэкап</h6>
+                    <p>Создает ZIP архив с базой данных и всеми файлами</p>
+                    <a href="{{ url_for('backup_database') }}" class="btn-custom btn-success-custom">
+                        <i class="fas fa-download"></i> Скачать
+                    </a>
+                </div>
+                
+                <div class="backup-box">
+                    <h6><i class="fas fa-cloud-upload-alt text-danger"></i> Восстановить</h6>
+                    <p>Загрузите ранее сохраненный ZIP архив</p>
+                    <form method="POST" action="{{ url_for('restore_database') }}" 
+                          enctype="multipart/form-data" 
+                          id="restoreForm"
+                          onsubmit="return confirm('⚠️ ВНИМАНИЕ!\n\nЭто действие заменит ВСЕ текущие данные!\n\nВы уверены что хотите продолжить?');">
+                        
+                        <label for="backup_file" class="custom-file-upload">
+                            <i class="fas fa-file-archive"></i>
+                            <div class="file-text">Нажмите для выбора файла</div>
+                            <div class="file-name" id="fileName">Файл не выбран</div>
+                        </label>
+                        <input type="file" id="backup_file" name="backup_file" 
+                               class="hidden-file-input" accept=".zip" required>
+                        
+                        <button type="submit" class="btn-custom btn-warning-custom">
+                            <i class="fas fa-upload"></i> Восстановить
+                        </button>
+                    </form>
+                </div>
+            </div>
+            
+            <div class="alert-custom">
+                <i class="fas fa-exclamation-triangle"></i>
+                <div>
+                    <strong>Важная информация!</strong><br>
+                    • Регулярно создавайте резервные копии<br>
+                    • При восстановлении все текущие данные будут заменены<br>
+                    • Храните бэкапы в безопасном месте
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Информация о системе -->
+    <div class="settings-card">
+        <div class="settings-card-header header-info">
+            <i class="fas fa-info-circle"></i>
+            <span>Информация о системе</span>
+        </div>
+        <div class="settings-card-body">
+            <table class="info-table">
+                <tbody>
+                    <tr>
+                        <td><i class="fas fa-database"></i> База данных</td>
+                        <td>SQLite (instance/shop.db)</td>
+                    </tr>
+                    <tr>
+                        <td><i class="fas fa-calendar-check"></i> Текущая дата</td>
+                        <td>{{ now.strftime('%d.%m.%Y %H:%M:%S') if now else '' }}</td>
+                    </tr>
+                    <tr>
+                        <td><i class="fas fa-code-branch"></i> Версия системы</td>
+                        <td>v1.0.0 Optimized</td>
+                    </tr>
+                    <tr>
+                        <td><i class="fas fa-server"></i> Сервер</td>
+                        <td>Flask + SQLAlchemy</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    <div style="margin-top: 20px;">
+        <a href="{{ url_for('admin_dashboard') }}" class="btn-custom btn-secondary-custom">
+            <i class="fas fa-arrow-left"></i> Назад в панель управления
+        </a>
+    </div>
+</div>
+
+<script>
+// Обработчик для отображения имени выбранного файла
+document.getElementById('backup_file').addEventListener('change', function(e) {
+    const fileName = e.target.files[0] ? e.target.files[0].name : 'Файл не выбран';
+    document.getElementById('fileName').textContent = fileName;
+    
+    if (e.target.files[0]) {
+        document.querySelector('.custom-file-upload').style.borderColor = '#10b981';
+        document.querySelector('.custom-file-upload').style.background = '#ecfdf5';
+        document.querySelector('.file-name').style.color = '#059669';
+    }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}Баннеры{% endblock %}
+{% block content %}
+<div class="container-admin">
+  <h4 class="fw-bold mb-3"><i class="fas fa-image"></i> Баннеры</h4>
+
+  <form action="{{ url_for('add_banner') }}" method="POST" enctype="multipart/form-data" class="d-flex gap-2 mb-3">
+    <input type="file" name="banner" accept="image/*" class="form-control" required>
+    <button type="submit" class="btn btn-outline-primary">Добавить</button>
+  </form>
+
+  <div class="row g-3">
+    {% for banner in banners %}
+    <div class="col-6 col-md-3">
+      <div class="card shadow-sm">
+        <img src="{{ url_for('static', filename='banners/' ~ banner.filename) }}" class="card-img-top" alt="Баннер">
+        <div class="card-body text-center p-2">
+          <form action="{{ url_for('delete_banner', banner_id=banner.id) }}" method="POST">
+            <button type="submit" class="btn btn-sm btn-outline-danger w-100">Удалить</button>
+          </form>
+        </div>
+      </div>
+    </div>
+    {% else %}
+    <p class="text-muted text-center">Баннеров пока нет</p>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}
