@@ -20,7 +20,7 @@ import zipfile
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'your-secret-key-change-this'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///shop.db?check_same_thread=False'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///shop.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SQLALCHEMY_POOL_SIZE'] = 10
 app.config['SQLALCHEMY_POOL_RECYCLE'] = 3600
@@ -39,6 +39,20 @@ db = SQLAlchemy(app)
 
 # Создаем папку для загрузок
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+
+# Кастомный фильтр для безопасной работы со строками
+@app.template_filter('safe_string')
+def safe_string_filter(value):
+    """Возвращает пустую строку если значение None"""
+    return value if value is not None else ''
+
+# Фильтр для замены слешей
+@app.template_filter('replace_slashes')
+def replace_slashes_filter(value):
+    """Безопасная замена обратных слешей на прямые"""
+    if value is None:
+        return ''
+    return str(value).replace('\\', '/')
 
 # ==============================
 # 🗄️ Модели базы данных
@@ -387,6 +401,10 @@ def edit_user(user_id):
 @admin_required
 def admin_products():
     products = Product.query.order_by(Product.id.desc()).all()
+    # Убедимся что у всех товаров есть значение image (даже если None)
+    for product in products:
+        if product.image is None:
+            product.image = ''
     return render_template('admin/products.html', products=products)
 
 @app.route('/admin/add_product', methods=['POST'])
@@ -396,19 +414,24 @@ def add_product():
     price = request.form.get('price', '0')
     image = request.files.get('image')
     
+    if not name:
+        flash('Введите название товара', 'danger')
+        return redirect(url_for('admin_products'))
+    
     try:
         price = float(price)
     except:
         flash('Неверная цена', 'danger')
         return redirect(url_for('admin_products'))
     
-    image_path = None
+    image_path = ''  # По умолчанию пустая строка вместо None
     if image and image.filename:
         filename = secure_filename(image.filename)
         image_path = os.path.join('uploads', filename)
-        image.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+        full_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+        image.save(full_path)
     
-    product = Product(name=name, price=price, image=image_path)
+    product = Product(name=name, price=price, image=image_path if image_path else None)
     db.session.add(product)
     db.session.commit()
     flash('Товар добавлен', 'success')
@@ -1096,9 +1119,7 @@ def update_last_active():
 # ==============================
 
 with app.app_context():
-    if not os.path.exists(DATABASE_PATH):
-        db.create_all()
-
+    db.create_all()
     
     # Создаем админа по умолчанию
     admin = User.query.filter_by(username='admin').first()
@@ -1116,4 +1137,4 @@ with app.app_context():
 # ==============================
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=8080, debug=False, use_reloader=False)
+    app.run(host='0.0.0.0', debug=False, port=8080, threaded=True)

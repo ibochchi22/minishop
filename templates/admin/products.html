@@ -10,14 +10,15 @@
       <input type="text" name="name" class="form-control" placeholder="Название товара" required>
     </div>
     <div class="col-md-2">
-      <input type="number" name="price" class="form-control" placeholder="Цена" step="0.01" min="0" required>
-
+      <input type="number" name="price" class="form-control" placeholder="Цена ($)" step="0.01" min="0" required>
     </div>
     <div class="col-md-3">
       <input type="file" name="image" class="form-control" accept="image/*">
     </div>
     <div class="col-md-3">
-      <button type="submit" class="btn btn-success w-100">Добавить</button>
+      <button type="submit" class="btn btn-success w-100">
+        <i class="fas fa-plus"></i> Добавить
+      </button>
     </div>
   </form>
 
@@ -29,10 +30,14 @@
   <!-- 🔹 Вкладки -->
   <ul class="nav nav-tabs mb-3" id="productTabs">
     <li class="nav-item">
-      <a class="nav-link active" data-bs-toggle="tab" href="#active-products">Активные</a>
+      <a class="nav-link active" data-bs-toggle="tab" href="#active-products">
+        <i class="fas fa-box-open"></i> Активные
+      </a>
     </li>
     <li class="nav-item">
-      <a class="nav-link" data-bs-toggle="tab" href="#archived-products">Архив</a>
+      <a class="nav-link" data-bs-toggle="tab" href="#archived-products">
+        <i class="fas fa-archive"></i> Архив
+      </a>
     </li>
   </ul>
 
@@ -42,30 +47,52 @@
       <div class="product-grid">
         {% for product in products if not product.is_archived %}
         <div class="product-card" data-name="{{ product.name|lower }}">
-          <img 
-            src="{{ url_for('static', filename=product.image.replace('\\', '/')) }}" 
-            alt="{{ product.name }}" 
-            class="product-img" 
-            loading="lazy"
-            onerror="this.onerror=null; this.src='https://via.placeholder.com/400x220/f1f5f9/94a3b8?text=Фото';">
+          <!-- ✅ Безопасная обработка изображений -->
+          {% if product.image and product.image != '' %}
+            <img 
+              src="{{ url_for('static', filename=product.image | replace_slashes) }}" 
+              alt="{{ product.name }}" 
+              class="product-img" 
+              loading="lazy"
+              onerror="this.onerror=null; this.src='https://via.placeholder.com/400x220/f1f5f9/94a3b8?text=Нет+фото';">
+          {% else %}
+            <div class="product-img no-image">
+              <i class="fas fa-image"></i>
+              <span>Нет фото</span>
+            </div>
+          {% endif %}
           
           <div class="card-body text-center">
             <h6 class="product-name">{{ product.name }}</h6>
-            <p class="product-price">{{ product.price }} $</p>
+            <p class="product-price">${{ "%.2f" | format(product.price) }}</p>
             
             <form action="{{ url_for('edit_product', product_id=product.id) }}" method="POST" enctype="multipart/form-data" class="mb-2">
-              <input type="text" name="name" class="form-control mb-1" placeholder="Новое название">
-              <input type="number" name="price" class="form-control mb-1" placeholder="Новая цена" step="0.01" min="0">
-              <input type="file" name="image" class="form-control mb-2" accept="image/*">
-              <button class="btn btn-sm btn-outline-primary w-100">Изменить</button>
+              <input type="text" name="name" class="form-control form-control-sm mb-1" placeholder="Новое название" value="{{ product.name }}">
+              <input type="number" name="price" class="form-control form-control-sm mb-1" placeholder="Новая цена" step="0.01" min="0" value="{{ product.price }}">
+              <input type="file" name="image" class="form-control form-control-sm mb-2" accept="image/*">
+              <button class="btn btn-sm btn-outline-primary w-100">
+                <i class="fas fa-edit"></i> Изменить
+              </button>
             </form>
 
-            <a href="{{ url_for('archive_product', product_id=product.id) }}" class="btn btn-sm btn-outline-warning w-100 mb-1">Архивировать</a>
-            <a href="{{ url_for('delete_product', product_id=product.id) }}" class="btn btn-sm btn-outline-danger w-100">Удалить</a>
+            <a href="{{ url_for('archive_product', product_id=product.id) }}" 
+               class="btn btn-sm btn-outline-warning w-100 mb-1"
+               onclick="return confirm('Переместить товар в архив?')">
+              <i class="fas fa-archive"></i> Архивировать
+            </a>
+            <a href="{{ url_for('delete_product', product_id=product.id) }}" 
+               class="btn btn-sm btn-outline-danger w-100"
+               onclick="return confirm('Удалить товар? Это действие нельзя отменить!')">
+              <i class="fas fa-trash"></i> Удалить
+            </a>
           </div>
         </div>
         {% else %}
-          <p class="text-muted text-center">Активных товаров нет</p>
+          <div class="empty-state">
+            <i class="fas fa-box-open"></i>
+            <p>Активных товаров нет</p>
+            <small>Добавьте первый товар используя форму выше</small>
+          </div>
         {% endfor %}
       </div>
     </div>
@@ -75,18 +102,37 @@
       <div class="product-grid">
         {% for product in products if product.is_archived %}
         <div class="product-card archived" data-name="{{ product.name|lower }}">
-          <img 
-            src="{{ url_for('static', filename=product.image.replace('\\', '/')) }}" 
-            alt="{{ product.name }}" 
-            class="product-img grayscale">
+          <!-- ✅ Безопасная обработка изображений -->
+          {% if product.image and product.image != '' %}
+            <img 
+              src="{{ url_for('static', filename=product.image | replace_slashes) }}" 
+              alt="{{ product.name }}" 
+              class="product-img grayscale"
+              loading="lazy"
+              onerror="this.onerror=null; this.src='https://via.placeholder.com/400x220/f1f5f9/94a3b8?text=Нет+фото';">
+          {% else %}
+            <div class="product-img no-image grayscale">
+              <i class="fas fa-image"></i>
+              <span>Нет фото</span>
+            </div>
+          {% endif %}
+          
           <div class="card-body text-center">
             <h6 class="product-name text-muted">{{ product.name }}</h6>
-            <p class="product-price text-muted">{{ product.price }} UZS</p>
-            <a href="{{ url_for('unarchive_product', product_id=product.id) }}" class="btn btn-sm btn-outline-success w-100">Восстановить</a>
+            <p class="product-price text-muted">${{ "%.2f" | format(product.price) }}</p>
+            <a href="{{ url_for('unarchive_product', product_id=product.id) }}" 
+               class="btn btn-sm btn-outline-success w-100"
+               onclick="return confirm('Восстановить товар из архива?')">
+              <i class="fas fa-undo"></i> Восстановить
+            </a>
           </div>
         </div>
         {% else %}
-          <p class="text-muted text-center">Архив пуст</p>
+          <div class="empty-state">
+            <i class="fas fa-archive"></i>
+            <p>Архив пуст</p>
+            <small>Архивированных товаров нет</small>
+          </div>
         {% endfor %}
       </div>
     </div>
@@ -99,11 +145,13 @@
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: 12px;
+  gap: 15px;
+  padding: 10px 0;
 }
 
 .product-card {
   flex: 0 0 calc(50% - 10px);
+  max-width: 300px;
   background: #fff;
   border: 1px solid #e5e7eb;
   border-radius: 12px;
@@ -115,48 +163,148 @@
 
 .product-card:hover {
   transform: translateY(-3px);
-  box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.product-card.archived {
+  opacity: 0.7;
 }
 
 .product-img {
   width: 100%;
-  height: 160px;
+  height: 180px;
   object-fit: cover;
+  background: #f3f4f6;
+}
+
+.no-image {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+  color: #9ca3af;
+}
+
+.no-image i {
+  font-size: 3rem;
+  margin-bottom: 8px;
+}
+
+.no-image span {
+  font-size: 0.9rem;
+  font-weight: 500;
 }
 
 .card-body {
-  padding: 10px;
+  padding: 12px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
 }
 
 .product-name {
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 600;
-  margin-bottom: 4px;
+  margin-bottom: 5px;
+  color: #1f2937;
 }
 
 .product-price {
-  font-size: 13px;
-  color: #555;
-  margin-bottom: 8px;
+  font-size: 14px;
+  color: #10b981;
+  font-weight: 600;
+  margin-bottom: 10px;
 }
 
 .grayscale {
   filter: grayscale(100%);
 }
 
+.empty-state {
+  width: 100%;
+  text-align: center;
+  padding: 60px 20px;
+  color: #9ca3af;
+}
+
+.empty-state i {
+  font-size: 4rem;
+  margin-bottom: 15px;
+  opacity: 0.5;
+}
+
+.empty-state p {
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin-bottom: 5px;
+  color: #6b7280;
+}
+
+.empty-state small {
+  color: #9ca3af;
+}
+
+/* Улучшенные формы */
+.form-control-sm {
+  font-size: 0.85rem;
+  padding: 6px 10px;
+}
+
+/* Кнопки */
+.btn-sm {
+  font-size: 0.85rem;
+  padding: 6px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+}
+
+/* Вкладки */
+.nav-tabs .nav-link {
+  color: #6b7280;
+  border: none;
+  padding: 10px 20px;
+}
+
+.nav-tabs .nav-link.active {
+  color: #667eea;
+  border-bottom: 2px solid #667eea;
+  background: transparent;
+}
+
+.nav-tabs .nav-link:hover {
+  border-color: transparent;
+  color: #667eea;
+}
+
+/* Поиск */
+#searchInput {
+  border-radius: 25px;
+  padding: 12px 20px;
+  border: 2px solid #e5e7eb;
+  transition: all 0.3s;
+}
+
+#searchInput:focus {
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
 /* 📱 Мобильный адаптив */
-@media (max-width: 600px) {
+@media (max-width: 768px) {
   .product-card {
-    flex: 0 0 calc(50% - 8px);
-    border-radius: 10px;
+    flex: 0 0 calc(50% - 10px);
+    max-width: none;
   }
 
-  .product-img {
-    height: 120px;
+  .product-img, .no-image {
+    height: 140px;
   }
 
   .card-body {
-    padding: 6px;
+    padding: 8px;
   }
 
   .product-name {
@@ -164,12 +312,39 @@
   }
 
   .product-price {
-    font-size: 12px;
+    font-size: 13px;
   }
 
   .btn-sm {
     font-size: 11px;
-    padding: 4px;
+    padding: 5px 8px;
+  }
+
+  .form-control-sm {
+    font-size: 0.8rem;
+    padding: 5px 8px;
+  }
+
+  .no-image i {
+    font-size: 2rem;
+  }
+
+  .no-image span {
+    font-size: 0.75rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .container {
+    padding: 10px;
+  }
+
+  h3 {
+    font-size: 1.3rem;
+  }
+
+  .product-img, .no-image {
+    height: 120px;
   }
 }
 </style>
@@ -180,10 +355,29 @@ document.getElementById('searchInput').addEventListener('input', function () {
   const search = this.value.trim().toLowerCase();
   const activeTab = document.querySelector('.tab-pane.active');
   const cards = activeTab.querySelectorAll('.product-card');
+  let visibleCount = 0;
 
   cards.forEach(card => {
     const name = card.dataset.name;
-    card.style.display = name.includes(search) ? 'flex' : 'none';
+    const isVisible = name.includes(search);
+    card.style.display = isVisible ? 'flex' : 'none';
+    if (isVisible) visibleCount++;
+  });
+
+  // Показываем сообщение если ничего не найдено
+  const emptyState = activeTab.querySelector('.empty-state');
+  if (emptyState) {
+    emptyState.style.display = visibleCount === 0 && search !== '' ? 'block' : 'none';
+  }
+});
+
+// Сброс поиска при переключении вкладок
+document.querySelectorAll('[data-bs-toggle="tab"]').forEach(tab => {
+  tab.addEventListener('shown.bs.tab', function () {
+    document.getElementById('searchInput').value = '';
+    document.querySelectorAll('.product-card').forEach(card => {
+      card.style.display = 'flex';
+    });
   });
 });
 </script>
