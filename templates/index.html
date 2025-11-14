@@ -333,7 +333,7 @@
 
         <div class="mobile-card-body">
             <h6 class="mobile-card-title">{{ product.name }}</h6>
-            <div class="mobile-price">{{ product.price }} UZS</div>
+            <div class="mobile-price">{{ "{:,.0f}".format(product.price_uzs) }} UZS</div>
 
             {% if session.user_id %}
             <div class="qty-controls">

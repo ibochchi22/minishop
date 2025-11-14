@@ -174,16 +174,14 @@ def index():
         return redirect(url_for('login'))
 
     kurs = get_kurs()
-    
-    # Оптимизация: загружаем только активные товары
     banners = Banner.query.all()
     products = Product.query.filter_by(is_archived=False).all()
 
-    # Пересчитываем цену по курсу
     for p in products:
         p.price_uzs = round_price(p.price * kurs)
 
     return render_template('index.html', products=products, banners=banners)
+
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
